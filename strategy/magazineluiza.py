@@ -2,9 +2,6 @@ from strategy.strategy import ScrappingStrategy, Product
 from bs4 import BeautifulSoup
 
 class MagazineLuizaScrappingStrategy(ScrappingStrategy):
-    def find_product_in_magazine_luiza(self, tag):
-        return tag.has_attr("data-testid") and tag["data-testid"] == "product-card-container" 
-
     def scrap_product(self, content: BeautifulSoup) -> list[Product]:
         list_of_products: list[Product] = []
         products = content.find_all(attrs={"data-testid": "product-card-container"})

@@ -8,6 +8,8 @@ from urllib.parse import urlparse
 
 links = [
     "https://www.magazineluiza.com.br/lava-e-seca/eletrodomesticos/s/ed/ela1/?page=1",
+    "https://www.zoom.com.br/lavadora-roupas/lava-e-seca",
+    "https://lista.mercadolivre.com.br/eletrodomesticos/lavadores/maquinas-lavar/maquina-lava-e-seca_NoIndex_True"
 ]
 
 class Scrapper:
