@@ -1,14 +1,15 @@
-from strategy.strategy import ScrappingStrategy, Product
+from typing import Tuple, List
+from scrapper.strategy.strategy import ScrappingStrategy, Product
 from bs4 import BeautifulSoup
 
 class MercadoLivreScrappingStrategy(ScrappingStrategy):
-    def scrap_product(self, content: BeautifulSoup) -> list[Product]:
+    def scrap_product(self, content: BeautifulSoup, page: str, original_links: List[str]) -> Tuple[List[Product], List[str]]:
         list_of_products: list[Product] = []
         products = content.find_all(attrs={"class": "ui-search-result__wrapper"})
         for raw_product in products:
             product = self.get_product(raw_product)
             list_of_products.append(product)
-        return list_of_products
+        return list_of_products, original_links
 
 
     def get_product(self, raw_product):

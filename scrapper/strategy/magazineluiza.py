@@ -1,14 +1,28 @@
-from strategy.strategy import ScrappingStrategy, Product
+from typing import Tuple, List
+from scrapper.strategy.strategy import ScrappingStrategy, Product
 from bs4 import BeautifulSoup
+from urllib.parse import urlparse
 
 class MagazineLuizaScrappingStrategy(ScrappingStrategy):
-    def scrap_product(self, content: BeautifulSoup) -> list[Product]:
+    def scrap_product(self, content: BeautifulSoup, page: str, original_links: List[str]) -> Tuple[List[Product], List[str]]:
         list_of_products: list[Product] = []
         products = content.find_all(attrs={"data-testid": "product-card-container"})
         for raw_product in products:
             product = self.get_product(raw_product)
             list_of_products.append(product)
-        return list_of_products
+
+        url = urlparse(page)
+        original_host = url.scheme + '://' + url.netloc
+        links = content.find_all('a')
+        for link in links:
+            href = link.get('href')
+            if href is not None:
+                if href.find('page=') > 0:
+                    link_url = original_host + href
+                    if link_url not in original_links:
+                        original_links.append(link_url)
+
+        return list_of_products, links
 
 
     def get_product(self, raw_product):
