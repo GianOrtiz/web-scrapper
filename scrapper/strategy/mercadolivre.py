@@ -14,14 +14,15 @@ class MercadoLivreScrappingStrategy(ScrappingStrategy):
 
         pattern = re.compile("https://lista.mercadolivre.com.br/.*_[0-9]*_NoIndex_True")
         links = content.find_all('a')
+        new_links = []
         for link in links:
             href = link.get('href')
             if href is not None:
                 if pattern.match(href) is not None:
                     link_url = href
-                    if link_url not in original_links:
-                        original_links.append(link_url)
-        return list_of_products, original_links
+                    if link_url not in original_links and link_url not in new_links:
+                        new_links.append(link_url)
+        return list_of_products, new_links
 
     def get_product(self, raw_product):
         link = self.get_link(raw_product)
@@ -32,14 +33,19 @@ class MercadoLivreScrappingStrategy(ScrappingStrategy):
         return Product(link, title, review, price_value, installment)
 
     def get_link(self, raw_product):
-        link_element = raw_product.find(attrs={"class": "poly-component__title"}).find('a')
-        link = link_element.get('href')
-        return link
+        title_element = raw_product.find(attrs={"class": "poly-component__title"})
+        if link_element is not None:
+            link_element = title_element.find('a')
+            link = link_element.get('href')
+            return link
+        return None
 
     def get_title(self, raw_product):
         title_element = raw_product.find(attrs={"class": "poly-component__title"})
-        title = title_element.string
-        return title
+        if title_element is not None:
+            title = title_element.string
+            return title
+        return None
 
     def get_review(self, raw_product):
         review_element = raw_product.find(attrs={"class": "poly-reviews__rating"})

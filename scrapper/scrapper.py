@@ -27,5 +27,5 @@ class Scrapper:
         site = BeautifulSoup(content, 'html.parser')
         strategy = self.__scrapping_strategy_factory.select_strategy(page)
         products, links = strategy.scrap_product(site, page, self.__links)
-        self.__links = links
+        self.__links.extend(links)
         return products

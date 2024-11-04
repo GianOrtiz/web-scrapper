@@ -14,16 +14,15 @@ class MagazineLuizaScrappingStrategy(ScrappingStrategy):
         url = urlparse(page)
         original_host = url.scheme + '://' + url.netloc
         links = content.find_all('a')
+        new_links = []
         for link in links:
             href = link.get('href')
             if href is not None:
                 if href.find('page=') > 0:
                     link_url = original_host + href
-                    if link_url not in original_links:
-                        original_links.append(link_url)
-
-        return list_of_products, links
-
+                    if link_url not in original_links and link_url not in new_links:
+                        new_links.append(link_url)
+        return list_of_products, new_links
 
     def get_product(self, raw_product):
         link = self.get_link(raw_product)
