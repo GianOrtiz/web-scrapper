@@ -1,3 +1,5 @@
+import re
+
 from typing import Tuple, List
 from scrapper.strategy.strategy import ScrappingStrategy, Product
 from bs4 import BeautifulSoup
@@ -9,8 +11,17 @@ class MercadoLivreScrappingStrategy(ScrappingStrategy):
         for raw_product in products:
             product = self.get_product(raw_product)
             list_of_products.append(product)
-        return list_of_products, original_links
 
+        pattern = re.compile("https://lista.mercadolivre.com.br/.*_[0-9]*_NoIndex_True")
+        links = content.find_all('a')
+        for link in links:
+            href = link.get('href')
+            if href is not None:
+                if pattern.match(href) is not None:
+                    link_url = href
+                    if link_url not in original_links:
+                        original_links.append(link_url)
+        return list_of_products, original_links
 
     def get_product(self, raw_product):
         link = self.get_link(raw_product)
