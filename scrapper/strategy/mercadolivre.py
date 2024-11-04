@@ -34,7 +34,7 @@ class MercadoLivreScrappingStrategy(ScrappingStrategy):
 
     def get_link(self, raw_product):
         title_element = raw_product.find(attrs={"class": "poly-component__title"})
-        if link_element is not None:
+        if title_element is not None:
             link_element = title_element.find('a')
             link = link_element.get('href')
             return link

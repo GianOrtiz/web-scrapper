@@ -1,6 +1,6 @@
 import time
 
-from typing import List
+from typing import List, Tuple
 from bs4 import BeautifulSoup
 from scrapper.strategy.factory import ScrappingStrategyFactory
 from data.product import Product
@@ -16,16 +16,17 @@ class Scrapper:
         products: List[Product] = []
         for link in self.__links:
             print('Retrieve content data for ', link)
-            new_products = self.scrap(link)
+            new_products, retrieved_from_cache = self.scrap(link)
             products.extend(new_products)
-            print('Waiting to retrieve new URL')
-            time.sleep(30)
+            if retrieved_from_cache == False:
+                print('Waiting to retrieve new URL')
+                time.sleep(30)
         return products
 
-    def scrap(self, page: str) -> List[Product]:
-        content = self.__cache.get_page(page)
+    def scrap(self, page: str) -> Tuple[List[Product], bool]:
+        content, retrieved_from_cache = self.__cache.get_page(page)
         site = BeautifulSoup(content, 'html.parser')
         strategy = self.__scrapping_strategy_factory.select_strategy(page)
         products, links = strategy.scrap_product(site, page, self.__links)
         self.__links.extend(links)
-        return products
+        return products, retrieved_from_cache

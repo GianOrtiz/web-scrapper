@@ -1,19 +1,21 @@
-from hashlib import sha256
 import requests
 import os.path
+import typing
+
+from hashlib import sha256
 
 class Cache:
     def __init__(self, location: str):
         self.__location: str = location
 
-    def get_page(self, page: str):
+    def get_page(self, page: str) -> typing.Tuple[bytes, bool] :
         h = sha256(page.encode()).hexdigest()
         path = self.__location + '/' + h
         cache_hit = os.path.isfile(path)
         if cache_hit:
             with open(path, 'r') as file:
                 content = file.read()
-                return content
+                return content, True
     
         headers = {
             "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.96 Safari/537.36",
@@ -25,5 +27,5 @@ class Cache:
         content = page_request.content
         with open(path, 'w+') as f:
             f.write(content.decode('utf-8'))
-        return content
+        return content, False
         
