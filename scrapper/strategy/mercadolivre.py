@@ -21,16 +21,46 @@ class MercadoLivreScrappingStrategy(ScrappingStrategy):
         return Product(link, title, review, price_value, installment)
 
     def get_link(self, raw_product):
-        raise Exception("not implemented")
+        link_element = raw_product.find(attrs={"class": "poly-component__title"}).find('a')
+        link = link_element.get('href')
+        return link
 
     def get_title(self, raw_product):
-        raise Exception("not implemented")
+        title_element = raw_product.find(attrs={"class": "poly-component__title"})
+        title = title_element.string
+        return title
 
     def get_review(self, raw_product):
-        raise Exception("not implemented")
+        review_element = raw_product.find(attrs={"class": "poly-reviews__rating"})
+        if review_element is not None:
+            review = review_element.string
+            return review
+        return None
     
     def get_price_value(self, raw_product):
-        raise Exception("not implemented")
- 
+        price_element = raw_product.find(attrs={"class": "andes-money-amount--cents-superscript"})
+        if price_element is not None:
+            price = price_element.get("aria-label")
+            return price
+        return None
+
+    def retrieve_text_from_children(self, children, text):
+        current_text = text
+        for child in children:
+            if child.string is not None:
+                current_text += child.string
+            try:
+                if child.children is not None:
+                    text = self.retrieve_text_from_children(child.children, current_text)
+            except:
+                # There is a situation whereas there is no children attribute and the object throws
+                # an error, we pass in this situations as we do not want to do nothing with this error.
+                pass
+        return text
+
     def get_installment(self, raw_product):
-        raise Exception("not implemented")
+        installment_element = raw_product.find(attrs={"class": "poly-price__installments"})
+        if installment_element is not None:
+            installment = self.retrieve_text_from_children(installment_element.children, '')
+            return installment
+        return None
