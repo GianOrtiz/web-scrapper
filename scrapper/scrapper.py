@@ -19,8 +19,11 @@ class Scrapper:
             new_products, retrieved_from_cache = self.scrap(link)
             products.extend(new_products)
             if retrieved_from_cache == False:
-                print('Waiting to retrieve new URL')
+                # Waits before fetching another page.
                 time.sleep(30)
+            # Stops in a threshold number of products.
+            if len(products) > 1500:
+                break
         return products
 
     def scrap(self, page: str) -> Tuple[List[Product], bool]:
