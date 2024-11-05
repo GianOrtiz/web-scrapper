@@ -23,9 +23,13 @@ class Cache:
 	        "Accept-Language": "en-US,en;q=0.9", 
             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
         }
-        page_request = requests.get(page, headers=headers)
-        content = page_request.content
-        with open(path, 'w+') as f:
-            f.write(content.decode('utf-8'))
-        return content, False
+        try:
+            page_request = requests.get(page, headers=headers)
+            content = page_request.content
+            with open(path, 'w+') as f:
+                f.write(content.decode('utf-8'))
+            return content, False
+        # Workaround when the URL is bad formatted.
+        except:
+            return '', True
         
