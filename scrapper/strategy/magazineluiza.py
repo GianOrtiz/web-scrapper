@@ -7,8 +7,12 @@ class MagazineLuizaScrappingStrategy(ScrappingStrategy):
     def scrap_product(self, content: BeautifulSoup, page: str, original_links: List[str]) -> Tuple[List[Product], List[str]]:
         list_of_products: list[Product] = []
         products = content.find_all(attrs={"data-testid": "product-card-container"})
-        for raw_product in products:
-            product = self.get_product(raw_product)
+        if len(products) > 0:
+            for raw_product in products:
+                product = self.get_product(raw_product)
+                list_of_products.append(product)
+        else:
+            product = self.get_single_product(content, page)
             list_of_products.append(product)
 
         url = urlparse(page)
@@ -18,11 +22,18 @@ class MagazineLuizaScrappingStrategy(ScrappingStrategy):
         for link in links:
             href = link.get('href')
             if href is not None:
-                if href.find('page=') > 0:
-                    link_url = original_host + href
-                    if link_url not in original_links and link_url not in new_links:
-                        new_links.append(link_url)
+                link_url = original_host + href
+                if link_url not in original_links and link_url not in new_links:
+                    new_links.append(link_url)
         return list_of_products, new_links
+
+    def get_single_product(self, content, page):
+        link = page
+        title = self.get_single_title(content)
+        review = self.get_single_review(content)
+        price_value = self.get_single_price_value(content)
+        installment = self.get_single_installment(content)
+        return Product(link, title, review, price_value, installment)
 
     def get_product(self, raw_product):
         link = self.get_link(raw_product)
@@ -60,6 +71,36 @@ class MagazineLuizaScrappingStrategy(ScrappingStrategy):
     def get_installment(self, raw_product):
         product_content = raw_product.find(attrs={"data-testid": "product-card-content"})
         if product_content is not None:
-            installment = product_content.find(attrs={"data-testid": "installment"}).get_text()
+            installment_element = product_content.find(attrs={"data-testid": "installment"})
+            if installment_element is not None:
+                installment = installment_element.get_text()
+                return installment
+        return None
+
+    def get_single_title(self, content):
+        title_element = content.find(attrs={"data-testid": "heading-product-title"})
+        if title_element is not None:
+            title = title_element.string
+            return title
+        return None
+
+    def get_single_review(self, content):
+        review_element = content.find(attrs={"format": "score-count"})
+        if review_element is not None:
+            review = review_element.string
+            return review
+        return None
+    
+    def get_single_price_value(self, content):
+        price_element = content.find(attrs={"data-test-id": "price-value"})
+        if price_element is not None:
+            price = price_element.get("aria-label")
+            return price
+        return None
+
+    def get_single_installment(self, content):
+        installment_element = content.find(attrs={"data-test-id": "installment"})
+        if installment_element is not None:
+            installment = self.retrieve_text_from_children(installment_element.children, '')
             return installment
         return None
