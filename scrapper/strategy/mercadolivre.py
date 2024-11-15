@@ -1,20 +1,20 @@
 import re
 
-from typing import Tuple, List
+from typing import List
 from scrapper.strategy.strategy import ScrappingStrategy, Product
 from bs4 import BeautifulSoup
+from data.product_list import UniqueProductList
 
 class MercadoLivreScrappingStrategy(ScrappingStrategy):
-    def scrap_product(self, content: BeautifulSoup, page: str, original_links: List[str]) -> Tuple[List[Product], List[str]]:
-        list_of_products: list[Product] = []
+    def scrap_product(self, content: BeautifulSoup, page: str, original_links: List[str], products_list: UniqueProductList) -> List[str]:
         products = content.find_all(attrs={"class": "ui-search-result__wrapper"})
         if len(products) > 0:
             for raw_product in products:
                 product = self.get_product(raw_product)
-                list_of_products.append(product)
+                products_list.append(product)
         else:
             product = self.get_single_product(content, page)
-            list_of_products.append(product)
+            products_list.append(product)
 
         pattern = re.compile("https://lista\.mercadolivre\.com\.br/.*_[0-9]*_NoIndex_True|https://click1\.mercadolivre\.com\.br/.*|https://produto\.mercadolivre\.com\.br/.*")
         links = content.find_all('a')
@@ -26,7 +26,7 @@ class MercadoLivreScrappingStrategy(ScrappingStrategy):
                     link_url = href
                     if link_url not in original_links and link_url not in new_links:
                         new_links.append(link_url)
-        return list_of_products, new_links
+        return new_links
 
     def get_single_product(self, content, page):
         link = page

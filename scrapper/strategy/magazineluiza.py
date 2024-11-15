@@ -1,19 +1,20 @@
-from typing import Tuple, List
+from typing import List
 from scrapper.strategy.strategy import ScrappingStrategy, Product
 from bs4 import BeautifulSoup
 from urllib.parse import urlparse
+from data.product_list import UniqueProductList
 
 class MagazineLuizaScrappingStrategy(ScrappingStrategy):
-    def scrap_product(self, content: BeautifulSoup, page: str, original_links: List[str]) -> Tuple[List[Product], List[str]]:
-        list_of_products: list[Product] = []
+    def scrap_product(self, content: BeautifulSoup, page: str, original_links: List[str], products_list: UniqueProductList) -> List[str]:
         products = content.find_all(attrs={"data-testid": "product-card-container"})
         if len(products) > 0:
             for raw_product in products:
-                product = self.get_product(raw_product)
-                list_of_products.append(product)
+                product = self.get_product(raw_product, page)
+                products_list.append(product)
         else:
             product = self.get_single_product(content, page)
-            list_of_products.append(product)
+            if product is not None:
+                products_list.append(product)
 
         url = urlparse(page)
         original_host = url.scheme + '://' + url.netloc
@@ -22,10 +23,13 @@ class MagazineLuizaScrappingStrategy(ScrappingStrategy):
         for link in links:
             href = link.get('href')
             if href is not None:
-                link_url = original_host + href
+                if 'magazineluiza.com.br' in href:
+                    link_url = href
+                else:
+                    link_url = original_host + href
                 if link_url not in original_links and link_url not in new_links:
                     new_links.append(link_url)
-        return list_of_products, new_links
+        return new_links
 
     def get_single_product(self, content, page):
         link = page
@@ -33,18 +37,29 @@ class MagazineLuizaScrappingStrategy(ScrappingStrategy):
         review = self.get_single_review(content)
         price_value = self.get_single_price_value(content)
         installment = self.get_single_installment(content)
+        if title is None and review is None and price_value is None and installment is None:
+            return None
         return Product(link, title, review, price_value, installment)
 
-    def get_product(self, raw_product):
-        link = self.get_link(raw_product)
+    def get_product(self, raw_product, page):
+        link = self.get_link(raw_product, page)
         title = self.get_title(raw_product)
         review = self.get_review(raw_product)
         price_value = self.get_price_value(raw_product)
         installment = self.get_installment(raw_product)
         return Product(link, title, review, price_value, installment)
 
-    def get_link(self, raw_product):
-        return raw_product.get('href')
+    def get_link(self, raw_product, page):
+        href = raw_product.get('href')
+        if href is None:
+            return None
+        
+        if 'magazineluiza.com.br' not in href:
+            url = urlparse(page)
+            original_host = url.scheme + '://' + url.netloc
+            href = original_host + href
+        return href
+        
 
     def get_title(self, raw_product):
         product_content = raw_product.find(attrs={"data-testid": "product-card-content"})

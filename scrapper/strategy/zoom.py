@@ -2,14 +2,14 @@ from typing import Tuple, List
 from scrapper.strategy.strategy import ScrappingStrategy, Product
 from bs4 import BeautifulSoup
 from urllib.parse import urlparse
+from data.product_list import UniqueProductList
 
 class ZoomScrappingStrategy(ScrappingStrategy):
-    def scrap_product(self, content: BeautifulSoup, page: str, original_links: List[str]) -> Tuple[List[Product], List[str]]:
-        list_of_products: list[Product] = []
+    def scrap_product(self, content: BeautifulSoup, page: str, original_links: List[str], products_list: UniqueProductList) -> List[str]:
         products = content.find_all(attrs={"data-testid": "product-card::card"})
         for raw_product in products:
             product = self.get_product(raw_product)
-            list_of_products.append(product)
+            products_list.append(product)
 
         url = urlparse(page)
         original_host = url.scheme + '://' + url.netloc
@@ -22,7 +22,7 @@ class ZoomScrappingStrategy(ScrappingStrategy):
                     link_url = original_host + href
                     if link_url not in original_links and link_url not in new_links:
                         new_links.append(link_url)
-        return list_of_products, new_links
+        return new_links
 
     def get_product(self, raw_product) -> Product:
         link = self.get_link(raw_product)
