@@ -7,21 +7,26 @@ from data.link.links import Links
 
 class MagazineLuizaScrappingStrategy(ScrappingStrategy):
     def scrap_product(self, content: BeautifulSoup, page: str, links: Links, products_list: UniqueProductList):
+        # Retrieve all products card in a list page.
         products = content.find_all(attrs={"data-testid": "product-card-container"})
         if len(products) > 0:
             for raw_product in products:
                 product = self.get_product(raw_product, page)
                 products_list.append(product)
         else:
+            # When there is no product found, then it is not a list page and we can
+            # retrieve it as a single product.
             product = self.get_single_product(content, page)
             if product is not None:
                 products_list.append(product)
 
+        # Retrieves news links from this page as a crawler.
         link_aggregator_factory = LinkAggregatorFactory()
         link_aggregator = link_aggregator_factory.select_strategy(page)
         link_aggregator.aggregate_links(content, page, links)
 
     def get_single_product(self, content, page):
+        # Retrieve every single attribute needed for the product.
         link = page
         title = self.get_single_title(content)
         review = self.get_single_review(content)
@@ -32,6 +37,7 @@ class MagazineLuizaScrappingStrategy(ScrappingStrategy):
         return Product(link, title, review, price_value, installment)
 
     def get_product(self, raw_product, page):
+        # Retrieve every single attribute needed for the product.
         link = self.get_link(raw_product, page)
         title = self.get_title(raw_product)
         review = self.get_review(raw_product)
@@ -40,16 +46,18 @@ class MagazineLuizaScrappingStrategy(ScrappingStrategy):
         return Product(link, title, review, price_value, installment)
 
     def get_link(self, raw_product, page):
+        # The links is the product card href.
         href = raw_product.get('href')
         if href is None:
             return None
         
+        # Some links does not include the host and use relative path, we need
+        # to add the host as the prefix.
         if 'magazineluiza.com.br' not in href:
             url = urlparse(page)
             original_host = url.scheme + '://' + url.netloc
             href = original_host + href
         return href
-        
 
     def get_title(self, raw_product):
         product_content = raw_product.find(attrs={"data-testid": "product-card-content"})

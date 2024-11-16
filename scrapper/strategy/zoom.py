@@ -7,11 +7,13 @@ from data.link.aggregators.factory import LinkAggregatorFactory
 
 class ZoomScrappingStrategy(ScrappingStrategy):
     def scrap_product(self, content: BeautifulSoup, page: str, links: Links, products_list: UniqueProductList):
+        # Retrieve all products card in a list page.
         products = content.find_all(attrs={"data-testid": "product-card::card"})
         for raw_product in products:
             product = self.get_product(raw_product)
             products_list.append(product)
 
+        # Retrieves news links from this page as a crawler.
         link_aggregator_factory = LinkAggregatorFactory()
         link_aggregator = link_aggregator_factory.select_strategy(page)
         link_aggregator.aggregate_links(content, page, links)

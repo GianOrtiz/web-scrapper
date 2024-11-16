@@ -3,6 +3,7 @@ from scrapper.strategy.magazineluiza import MagazineLuizaScrappingStrategy
 from scrapper.strategy.zoom import ZoomScrappingStrategy
 from scrapper.strategy.mercadolivre import MercadoLivreScrappingStrategy
 
+# Scrapping strategy factory to select a strategy for every website.
 class ScrappingStrategyFactory:
     def select_strategy(self, page: str) -> ScrappingStrategy:
         if page.find('magazineluiza') >= 0:

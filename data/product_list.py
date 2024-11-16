@@ -1,6 +1,7 @@
 from typing import List
 from data.product import Product
 
+# A unique products list to add just unique products for every website.
 class UniqueProductList:
     def __init__(self):
         self.__products: List[Product] = []

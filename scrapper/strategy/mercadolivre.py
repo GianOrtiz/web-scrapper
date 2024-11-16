@@ -6,15 +6,19 @@ from data.link.aggregators.factory import LinkAggregatorFactory
 
 class MercadoLivreScrappingStrategy(ScrappingStrategy):
     def scrap_product(self, content: BeautifulSoup, page: str, links: Links, products_list: UniqueProductList):
+        # Retrieve all products card in a list page.
         products = content.find_all(attrs={"class": "ui-search-result__wrapper"})
         if len(products) > 0:
             for raw_product in products:
                 product = self.get_product(raw_product)
                 products_list.append(product)
         else:
+            # When there is no product found, then it is not a list page and we can
+            # retrieve it as a single product.
             product = self.get_single_product(content, page)
             products_list.append(product)
 
+        # Retrieves news links from this page as a crawler.
         link_aggregator_factory = LinkAggregatorFactory()
         link_aggregator = link_aggregator_factory.select_strategy(page)
         link_aggregator.aggregate_links(content, page, links)
