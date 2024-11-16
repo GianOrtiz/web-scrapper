@@ -1,11 +1,12 @@
-from typing import List
 from scrapper.strategy.strategy import ScrappingStrategy, Product
 from bs4 import BeautifulSoup
 from urllib.parse import urlparse
 from data.product_list import UniqueProductList
+from data.link.aggregators.factory import LinkAggregatorFactory
+from data.link.links import Links
 
 class MagazineLuizaScrappingStrategy(ScrappingStrategy):
-    def scrap_product(self, content: BeautifulSoup, page: str, original_links: List[str], products_list: UniqueProductList) -> List[str]:
+    def scrap_product(self, content: BeautifulSoup, page: str, links: Links, products_list: UniqueProductList):
         products = content.find_all(attrs={"data-testid": "product-card-container"})
         if len(products) > 0:
             for raw_product in products:
@@ -16,20 +17,9 @@ class MagazineLuizaScrappingStrategy(ScrappingStrategy):
             if product is not None:
                 products_list.append(product)
 
-        url = urlparse(page)
-        original_host = url.scheme + '://' + url.netloc
-        links = content.find_all('a')
-        new_links = []
-        for link in links:
-            href = link.get('href')
-            if href is not None:
-                if 'magazineluiza.com.br' in href:
-                    link_url = href
-                else:
-                    link_url = original_host + href
-                if link_url not in original_links and link_url not in new_links:
-                    new_links.append(link_url)
-        return new_links
+        link_aggregator_factory = LinkAggregatorFactory()
+        link_aggregator = link_aggregator_factory.select_strategy(page)
+        link_aggregator.aggregate_links(content, page, links)
 
     def get_single_product(self, content, page):
         link = page
@@ -70,12 +60,13 @@ class MagazineLuizaScrappingStrategy(ScrappingStrategy):
 
     def get_review(self, raw_product):
         product_content = raw_product.find(attrs={"data-testid": "product-card-content"})
-        product_review_div = product_content.find(attrs={"data-testid": "review"})
-        if product_review_div is not None:
-            product_review = product_review_div.find('span').string
-            return product_review
-        return None
-    
+        if product_content is not None:
+            product_review_div = product_content.find(attrs={"data-testid": "review"})
+            if product_review_div is not None:
+                product_review = product_review_div.find('span').string
+                return product_review
+            return None
+        
     def get_price_value(self, raw_product):
         product_content = raw_product.find(attrs={"data-testid": "product-card-content"})
         if product_content is not None:

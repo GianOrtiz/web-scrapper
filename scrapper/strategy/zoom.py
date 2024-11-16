@@ -1,28 +1,20 @@
-from typing import Tuple, List
 from scrapper.strategy.strategy import ScrappingStrategy, Product
 from bs4 import BeautifulSoup
 from urllib.parse import urlparse
+from data.link.links import Links
 from data.product_list import UniqueProductList
+from data.link.aggregators.factory import LinkAggregatorFactory
 
 class ZoomScrappingStrategy(ScrappingStrategy):
-    def scrap_product(self, content: BeautifulSoup, page: str, original_links: List[str], products_list: UniqueProductList) -> List[str]:
+    def scrap_product(self, content: BeautifulSoup, page: str, links: Links, products_list: UniqueProductList):
         products = content.find_all(attrs={"data-testid": "product-card::card"})
         for raw_product in products:
             product = self.get_product(raw_product)
             products_list.append(product)
 
-        url = urlparse(page)
-        original_host = url.scheme + '://' + url.netloc
-        links = content.find_all('a')
-        new_links = []
-        for link in links:
-            href = link.get('href')
-            if href is not None:
-                if href.find('page=') > 0:
-                    link_url = original_host + href
-                    if link_url not in original_links and link_url not in new_links:
-                        new_links.append(link_url)
-        return new_links
+        link_aggregator_factory = LinkAggregatorFactory()
+        link_aggregator = link_aggregator_factory.select_strategy(page)
+        link_aggregator.aggregate_links(content, page, links)
 
     def get_product(self, raw_product) -> Product:
         link = self.get_link(raw_product)

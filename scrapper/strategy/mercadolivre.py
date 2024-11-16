@@ -1,12 +1,11 @@
-import re
-
-from typing import List
 from scrapper.strategy.strategy import ScrappingStrategy, Product
 from bs4 import BeautifulSoup
 from data.product_list import UniqueProductList
+from data.link.links import Links
+from data.link.aggregators.factory import LinkAggregatorFactory
 
 class MercadoLivreScrappingStrategy(ScrappingStrategy):
-    def scrap_product(self, content: BeautifulSoup, page: str, original_links: List[str], products_list: UniqueProductList) -> List[str]:
+    def scrap_product(self, content: BeautifulSoup, page: str, links: Links, products_list: UniqueProductList):
         products = content.find_all(attrs={"class": "ui-search-result__wrapper"})
         if len(products) > 0:
             for raw_product in products:
@@ -16,17 +15,9 @@ class MercadoLivreScrappingStrategy(ScrappingStrategy):
             product = self.get_single_product(content, page)
             products_list.append(product)
 
-        pattern = re.compile("https://lista\.mercadolivre\.com\.br/.*_[0-9]*_NoIndex_True|https://click1\.mercadolivre\.com\.br/.*|https://produto\.mercadolivre\.com\.br/.*")
-        links = content.find_all('a')
-        new_links = []
-        for link in links:
-            href = link.get('href')
-            if href is not None:
-                if pattern.match(href) is not None and '/noindex/' not in href:
-                    link_url = href
-                    if link_url not in original_links and link_url not in new_links:
-                        new_links.append(link_url)
-        return new_links
+        link_aggregator_factory = LinkAggregatorFactory()
+        link_aggregator = link_aggregator_factory.select_strategy(page)
+        link_aggregator.aggregate_links(content, page, links)
 
     def get_single_product(self, content, page):
         link = page
