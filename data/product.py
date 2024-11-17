@@ -9,6 +9,7 @@ class Product:
         self.__review = normalize_review(review)
         self.__price = normalize_price(price)
         self.__installment = normalize_installment(installment)
+        self.__cluster = None
 
     @property
     def link(self) -> str:
@@ -30,6 +31,14 @@ class Product:
     def installment(self) -> str:
         return self.__installment
 
+    @property
+    def cluster(self):
+        return self.__cluster
+    
+    @cluster.setter
+    def cluster(self, value: int):
+        self.__cluster = value
+
     def to_json(self):
         return {
             'link': self.__link,
@@ -37,4 +46,5 @@ class Product:
             'review': self.__review,
             'price': self.__price,
             'installment': self.__installment,
+            'cluster': self.__cluster,
         }

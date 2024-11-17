@@ -31,6 +31,5 @@ def normalize_installment(installment_text):
 
     return {
         "total_amount": total_amount,
-        "installments": installments,
         "amount_per_installment": amount_per_installment,
     }

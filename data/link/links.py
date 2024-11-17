@@ -23,6 +23,10 @@ class Links:
         if link in self.__magazineluiza_links or link in self.__zoom_links or link in self.__mercadolivre_links or link in self.__links_accessed:
             return
 
+        # Ignores blogs and social medias.
+        if 'instagram' in link or 'blog' in link or 'facebook' in link or 'linkedin' in link:
+            return
+
         # Append the link to the correct implementation list.
         if 'magazineluiza' in link:
             self.__magazineluiza_links.append(link)

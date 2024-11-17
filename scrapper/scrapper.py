@@ -7,6 +7,7 @@ from data.product import Product
 from data.cache import Cache
 from data.product_list import UniqueProductList
 from data.link.links import Links
+from scrapper.clustering.title import cluster_products_by_titles
 
 class Scrapper:
     def __init__(self, cache: Cache, links: Links):
@@ -24,8 +25,9 @@ class Scrapper:
                 time.sleep(20)
             print('Retrieved content data for ', link, self.__products_list.length())
             # Stops in a threshold number of products.
-            if self.__products_list.length() > 4500:
+            if self.__products_list.length() > 2000:
                 break
+        cluster_products_by_titles(self.__products_list.products)
         return self.__products_list.products
 
     def scrap(self, page: str) -> bool:
