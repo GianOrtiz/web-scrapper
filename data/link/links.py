@@ -35,9 +35,6 @@ class Links:
         elif 'mercadolivre' in link:
             self.__mercadolivre_links.append(link)
 
-        # Shuffles all list to distribute access to links.
-        self.shuffle()
-
     def pop(self) -> str:
         # Select the correct list to access.
         if self.__list_to_access == 0:
