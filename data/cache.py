@@ -2,6 +2,7 @@ import requests
 import os.path
 import typing
 
+from datetime import datetime
 from hashlib import sha256
 
 class Cache:
@@ -10,7 +11,13 @@ class Cache:
 
     def get_page(self, page: str) -> typing.Tuple[bytes, bool] :
         h = sha256(page.encode()).hexdigest()
-        path = self.__location + '/' + h
+        now = datetime.now()
+        date = str(now.day) + '-' + str(now.month) + '-' + str(now.year)
+        path = self.__location + '/' + date
+        path_exists = os.path.isdir(path)
+        if not path_exists:
+            os.mkdir(path)
+        path += '/' + h
         cache_hit = os.path.isfile(path)
         if cache_hit:
             with open(path, 'r') as file:
