@@ -15,4 +15,4 @@ if __name__ == '__main__':
     cache = Cache(location)
     scrapper = Scrapper(cache, links)
     products = scrapper.scrap_all_sites()
-    ExporterFactory.get('csv').export(products)
+    ExporterFactory.get('json').export(products)

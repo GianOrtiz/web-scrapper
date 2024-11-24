@@ -26,6 +26,7 @@ class Scrapper:
             print('Retrieved content data for ', link, self.__products_list.length())
             # Stops in a threshold number of products.
             if self.__products_list.length() > 2000:
+                print('Content retrieved from', self.__links.total, 'sites')
                 break
         cluster_products_by_titles(self.__products_list.products)
         return self.__products_list.products

@@ -18,6 +18,10 @@ class Links:
                 self.__mercadolivre_links.append(link)
         self.__links_accessed: List[str] = []
 
+    @property
+    def total(self):
+        return len(self.__links_accessed)
+
     def append(self, link: str):
         # Do not append the link if it is already accessed earlier.
         if link in self.__magazineluiza_links or link in self.__zoom_links or link in self.__mercadolivre_links or link in self.__links_accessed:
